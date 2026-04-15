@@ -1,3 +1,4 @@
 {
+  "name": "goofoodd",
   "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
 }
