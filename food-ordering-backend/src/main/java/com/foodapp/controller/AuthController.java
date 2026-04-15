@@ -2,6 +2,7 @@ package com.foodapp.controller;
 
 import com.foodapp.dto.request.LoginRequest;
 import com.foodapp.dto.request.GoogleAuthRequest;
+import com.foodapp.dto.request.RefreshTokenRequest;
 import com.foodapp.dto.request.RegisterRequest;
 import com.foodapp.dto.response.ApiResponse;
 import com.foodapp.dto.response.AuthResponse;
@@ -34,5 +35,16 @@ public class AuthController {
     @PostMapping("/google")
     public ResponseEntity<ApiResponse<AuthResponse>> googleLogin(@Valid @RequestBody GoogleAuthRequest request) {
         return ResponseEntity.ok(authService.googleLogin(request));
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<ApiResponse<AuthResponse>> refresh(@Valid @RequestBody RefreshTokenRequest request) {
+        return ResponseEntity.ok(authService.refreshAccessToken(request));
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<ApiResponse<Void>> logout(@Valid @RequestBody RefreshTokenRequest request) {
+        authService.logout(request);
+        return ResponseEntity.ok(new ApiResponse<>(true, "Logged out", null));
     }
 }

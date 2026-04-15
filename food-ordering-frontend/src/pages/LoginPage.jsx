@@ -21,7 +21,7 @@ export default function LoginPage() {
       email: payload.email,
     };
 
-    login(userData, token);
+    login(userData, token, payload.refreshToken);
     navigate('/');
   };
 
@@ -166,9 +166,9 @@ export default function LoginPage() {
           </button>
 
           <div className="flex items-center gap-3 text-xs text-slate-400 dark:text-slate-500">
-            <span className="h-px flex-1 bg-slate-200 dark:bg-black" />
+            <span className="h-px flex-1 bg-slate-200 dark:bg-zinc-800" />
             <span>or</span>
-            <span className="h-px flex-1 bg-slate-200 dark:bg-black" />
+            <span className="h-px flex-1 bg-slate-200 dark:bg-zinc-800" />
           </div>
 
           {googleClientId ? (

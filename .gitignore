@@ -11,6 +11,9 @@
 # Local scripts that may contain credentials
 run-e2e.ps1
 
+# Keep local Copilot agent prompts out of git history
+.github/agents/
+
 # OS/editor
 .DS_Store
 Thumbs.db

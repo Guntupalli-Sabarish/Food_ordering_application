@@ -38,7 +38,8 @@ export default function RegisterPage() {
             name: payload.name,
             email: payload.email,
           },
-          payload.token
+          payload.token,
+          payload.refreshToken
         );
         setTimeout(() => navigate('/'), 900);
       } else {

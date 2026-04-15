@@ -3,12 +3,14 @@ package com.foodapp.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.foodapp.model.enums.OrderStatus;
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
@@ -24,7 +26,12 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 @Entity
-@Table(name = "orders")
+@Table(name = "orders", indexes = {
+    @Index(name = "idx_orders_user_id", columnList = "user_id"),
+    @Index(name = "idx_orders_created_at", columnList = "created_at"),
+    @Index(name = "idx_orders_status", columnList = "status"),
+    @Index(name = "idx_orders_restaurant_id", columnList = "restaurant_id")
+})
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -48,6 +55,13 @@ public class Order {
 
     @NotNull
     private BigDecimal totalAmount;
+
+    @Column(nullable = false)
+    private BigDecimal discountAmount = BigDecimal.ZERO;
+
+    private String couponCode;
+
+    private LocalDateTime estimatedDeliveryTime;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
     private List<OrderItem> orderItems;

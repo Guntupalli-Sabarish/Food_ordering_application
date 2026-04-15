@@ -21,12 +21,16 @@ export function ThemeProvider({ children }) {
   const [theme, setTheme] = useState(getInitialTheme);
 
   useEffect(() => {
-    document.documentElement.classList.remove('dark');
-    document.body.classList.remove('dark');
-    document.documentElement.setAttribute('data-theme', theme);
-    document.documentElement.style.colorScheme = theme;
+    const root = document.documentElement;
+    const isDark = theme === 'dark';
+
+    root.classList.toggle('dark', isDark);
+    root.setAttribute('data-theme', theme);
+    root.style.colorScheme = theme;
+
     document.body.setAttribute('data-theme', theme);
     document.body.style.colorScheme = theme;
+
     window.localStorage.setItem(STORAGE_KEY, theme);
   }, [theme]);
 

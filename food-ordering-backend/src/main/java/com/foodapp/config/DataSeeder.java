@@ -6,6 +6,7 @@ import com.foodapp.repository.MenuItemRepository;
 import com.foodapp.repository.RestaurantRepository;
 import java.util.ArrayList;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -338,6 +339,25 @@ public class DataSeeder implements CommandLineRunner {
         if (!newItems.isEmpty()) {
             menuItemRepository.saveAll(newItems);
         }
+
+        List<MenuItem> allMenuItems = menuItemRepository.findByRestaurantId(restaurant.getId());
+        if (!allMenuItems.isEmpty()) {
+            BigDecimal total = allMenuItems.stream()
+                .map(MenuItem::getPrice)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+            BigDecimal avgPrice = total.divide(BigDecimal.valueOf(allMenuItems.size()), 2, RoundingMode.HALF_UP);
+            restaurant.setAvgPrice(avgPrice);
+        }
+
+        if (restaurant.getAvgRating() == null) {
+            restaurant.setAvgRating(0.0);
+        }
+
+        if (restaurant.getOrderCount() == null) {
+            restaurant.setOrderCount(0L);
+        }
+
+        restaurantRepository.save(restaurant);
 
         log.info(
             "[Seeder] {} | menu added: {}",

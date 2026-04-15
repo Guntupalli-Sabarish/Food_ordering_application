@@ -16,6 +16,9 @@ public class OrderResponse {
     private String restaurantName;
     private String status;
     private BigDecimal totalAmount;
+    private BigDecimal discountAmount;
+    private String couponCode;
+    private LocalDateTime estimatedDeliveryTime;
     private LocalDateTime createdAt;
     private List<OrderItemDetail> items;
 

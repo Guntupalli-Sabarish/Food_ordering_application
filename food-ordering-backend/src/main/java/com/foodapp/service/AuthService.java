@@ -2,6 +2,7 @@ package com.foodapp.service;
 
 import com.foodapp.dto.request.LoginRequest;
 import com.foodapp.dto.request.GoogleAuthRequest;
+import com.foodapp.dto.request.RefreshTokenRequest;
 import com.foodapp.dto.request.RegisterRequest;
 import com.foodapp.dto.response.ApiResponse;
 import com.foodapp.dto.response.AuthResponse;
@@ -13,6 +14,7 @@ import com.foodapp.repository.UserRepository;
 import com.foodapp.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import java.util.UUID;
@@ -27,6 +29,10 @@ public class AuthService {
     private final JwtUtil jwtUtil;
     private final EmailService emailService;
     private final GoogleTokenVerifierService googleTokenVerifierService;
+    private final RefreshTokenService refreshTokenService;
+
+    @Value("${app.jwt.expiration-ms}")
+    private long accessTokenExpirationMs;
 
     public ApiResponse<AuthResponse> register(RegisterRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
@@ -43,7 +49,7 @@ public class AuthService {
         emailService.sendRegistrationEmail(user.getEmail(), user.getName());
 
         log.info("[Auth] New user registered: {}", user.getEmail());
-        return ApiResponse.success(new AuthResponse(jwtUtil.generateToken(user.getEmail()), user.getName(), user.getEmail()));
+        return ApiResponse.success(buildAuthResponse(user));
     }
 
     public ApiResponse<AuthResponse> login(LoginRequest request) {
@@ -55,7 +61,7 @@ public class AuthService {
         }
 
         log.info("[Auth] User logged in: {}", user.getEmail());
-        return ApiResponse.success(new AuthResponse(jwtUtil.generateToken(user.getEmail()), user.getName(), user.getEmail()));
+        return ApiResponse.success(buildAuthResponse(user));
     }
 
     public ApiResponse<AuthResponse> googleLogin(GoogleAuthRequest request) {
@@ -78,6 +84,27 @@ public class AuthService {
         }
 
         log.info("[Auth] User logged in with Google: {}", user.getEmail());
-        return ApiResponse.success(new AuthResponse(jwtUtil.generateToken(user.getEmail()), user.getName(), user.getEmail()));
+        return ApiResponse.success(buildAuthResponse(user));
+    }
+
+    public ApiResponse<AuthResponse> refreshAccessToken(RefreshTokenRequest request) {
+        User user = refreshTokenService.validateAndRotate(request.getRefreshToken());
+        return ApiResponse.success(buildAuthResponse(user));
+    }
+
+    public void logout(RefreshTokenRequest request) {
+        refreshTokenService.revokeToken(request.getRefreshToken());
+    }
+
+    private AuthResponse buildAuthResponse(User user) {
+        String accessToken = jwtUtil.generateToken(user.getEmail());
+        String refreshToken = refreshTokenService.createToken(user);
+
+        return new AuthResponse(
+            accessToken,
+            user.getName(),
+            user.getEmail(),
+            refreshToken,
+            accessTokenExpirationMs / 1000);
     }
 }

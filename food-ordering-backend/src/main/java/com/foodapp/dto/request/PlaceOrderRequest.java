@@ -15,6 +15,10 @@ public class PlaceOrderRequest {
     @NotEmpty(message = "At least one item is required")
     private List<OrderItemRequest> items;
 
+    private String couponCode;
+
+    private Long addressId;
+
     @Data
     public static class OrderItemRequest {
 

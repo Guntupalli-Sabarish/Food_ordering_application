@@ -7,6 +7,8 @@ export function useRazorpay() {
     restaurantId,
     userName,
     userEmail,
+    couponCode,
+    addressId,
     onSuccess,
     onFailure,
   }) => {
@@ -35,6 +37,8 @@ export function useRazorpay() {
               orderRequest: {
                 restaurantId,
                 items: cartItems.map((item) => ({ menuItemId: item.id, quantity: item.quantity })),
+                ...(couponCode ? { couponCode } : {}),
+                ...(addressId ? { addressId } : {}),
               },
             };
 
