@@ -1,45 +1,51 @@
 # Food Ordering Backend
 
-A production-ready Spring Boot REST API backend for a Food Ordering Application. It includes JWT authentication (email/password + Google OAuth), restaurant and menu browsing, order placement/cancellation, email notifications, centralized exception handling, and AOP logging.
+Spring Boot REST API for the Food Ordering Application.
+
+## What It Does
+
+- Handles authentication with email/password and Google login
+- Serves restaurant, menu, cart, order, review, favorite, and address APIs
+- Sends email notifications
+- Uses JWT for protected routes
+- Persists data in PostgreSQL via Spring Data JPA
 
 ## Tech Stack
 
 - Java 17
-- Spring Boot 3.x
-- Spring Security + JWT (jjwt 0.11.5)
-- Google OAuth ID token verification
+- Spring Boot 3.3.5
+- Spring Security
 - Spring Data JPA + Hibernate
 - PostgreSQL
-- JavaMail (Gmail SMTP)
+- JavaMail
 - Spring AOP
 - Maven
-- Docker (Render deployment)
+- Docker
 
 ## Prerequisites
 
 - Java 17
 - Maven 3.9+
-- PostgreSQL 14+
-- Gmail App Password (for SMTP email sending)
+- PostgreSQL database
+- Gmail App Password if email sending is enabled
 
-## Setup
+## Local Setup
 
-1. Clone the repository and move into the backend folder.
-2. Create an `.env` or set system environment variables using values from `.env.example`.
-3. Create a PostgreSQL database (for example `foodordering_application`).
-4. Build the application:
+1. Create an `.env` file from `.env.example`.
+2. Set database and auth values.
+3. Build the app.
 
 ```bash
 mvn clean package -DskipTests
 ```
 
-5. Run the built JAR:
+4. Run the jar.
 
 ```bash
 java -jar target/*.jar
 ```
 
-6. API base URL:
+5. Default local API base URL.
 
 ```text
 http://localhost:8080
@@ -47,71 +53,79 @@ http://localhost:8080
 
 ## Environment Variables
 
-| Variable | Description |
+| Variable | Purpose |
 |---|---|
-| `DB_URL` | JDBC connection URL for PostgreSQL |
-| `DB_USERNAME` | PostgreSQL username |
-| `DB_PASSWORD` | PostgreSQL password |
-| `JWT_SECRET` | Long secret key used to sign JWT tokens (32+ chars) |
-| `GOOGLE_CLIENT_ID` | Google OAuth Web Client ID used to verify Google ID token audience |
-| `MAIL_USERNAME` | Gmail email address |
+| `DB_URL` | JDBC connection URL for PostgreSQL or Neon |
+| `DB_USERNAME` | Database username |
+| `DB_PASSWORD` | Database password |
+| `JWT_SECRET` | Secret used to sign JWT tokens |
+| `GOOGLE_CLIENT_ID` | Google OAuth client ID |
+| `MAIL_USERNAME` | Gmail address used for SMTP |
 | `MAIL_PASSWORD` | Gmail App Password |
-| `PORT` | Server port (default `8080`) |
+| `PORT` | App port for hosting platforms |
 
 ## API Endpoints
 
-All responses are wrapped in `ApiResponse<T>`.
+All responses use the application response wrapper.
 
-| Method | Endpoint | Auth Required | Description |
+### Auth
+
+| Method | Endpoint | Access | Description |
 |---|---|---|---|
-| POST | `/api/auth/register` | No | Register a new user |
-| POST | `/api/auth/login` | No | Login and receive JWT token |
-| GET | `/api/restaurants` | No | Get all restaurants |
-| GET | `/api/restaurants/{id}` | No | Get restaurant by id |
-| GET | `/api/restaurants/{id}/menu` | No | Get menu by restaurant id |
-| GET | `/api/menu/restaurant/{restaurantId}` | No | Alternate menu endpoint |
-| POST | `/api/orders` | Yes | Place order |
-| GET | `/api/orders/my` | Yes | Get current user orders |
-| GET | `/api/orders/{id}` | Yes | Get order by id (owner only) |
-| PUT | `/api/orders/{id}/cancel` | Yes | Cancel a pending order |
-| GET | `/api/users/me` | Yes | Get current user profile |
+| POST | `/api/auth/register` | Public | Register user |
+| POST | `/api/auth/login` | Public | Login user |
+| POST | `/api/auth/google` | Public | Google sign-in |
+| POST | `/api/auth/refresh` | Public | Refresh token |
 
-### Authorization Header
+### Restaurant and Menu
 
-For protected endpoints, send JWT token in header:
+| Method | Endpoint | Access | Description |
+|---|---|---|---|
+| GET | `/api/restaurants` | Public | List restaurants |
+| GET | `/api/restaurants/search` | Public | Search restaurants |
+| GET | `/api/restaurants/{id}` | Public | Restaurant details |
+| GET | `/api/restaurants/{id}/menu` | Public | Restaurant menu |
+| GET | `/api/menu/restaurant/{restaurantId}` | Public | Alternate menu endpoint |
 
-```text
-Authorization: Bearer <token>
-```
+### Cart
 
-## Postman Testing Flow
+| Method | Endpoint | Access | Description |
+|---|---|---|---|
+| GET | `/api/cart` | Protected | Get cart |
+| POST | `/api/cart/items` | Protected | Add item to cart |
+| PUT | `/api/cart/items/{itemId}` | Protected | Update quantity |
+| DELETE | `/api/cart/items/{itemId}` | Protected | Remove item |
+| DELETE | `/api/cart` | Protected | Clear cart |
 
-1. Register user: `POST /api/auth/register`
-2. Login user: `POST /api/auth/login`
-3. Copy token from login response
-4. Test public endpoints: restaurants and menu
-5. Test protected endpoints with `Authorization: Bearer <token>`
-6. Place order, get my orders, get order by id, cancel pending order
+### Orders
 
-## Render Deployment (Docker)
+| Method | Endpoint | Access | Description |
+|---|---|---|---|
+| POST | `/api/orders` | Protected | Place order |
+| GET | `/api/orders/my` | Protected | Current user orders |
+| GET | `/api/orders/{id}` | Protected | Get order by id |
+| PUT | `/api/orders/{id}/cancel` | Protected | Cancel pending order |
+| GET | `/api/orders/{id}/status` | Protected | Track order status |
 
-1. Push this backend code to GitHub.
-2. In Render, create a new **Web Service** from your repo.
-3. Choose **Docker** environment (Render auto-detects `Dockerfile`).
-4. Add environment variables in Render dashboard:
-   - `DB_URL`
-   - `DB_USERNAME`
-   - `DB_PASSWORD`
-   - `JWT_SECRET`
-   - `MAIL_USERNAME`
-   - `MAIL_PASSWORD`
-   - `PORT` (optional, Render provides one)
-5. Ensure your PostgreSQL instance is reachable from Render (public endpoint or managed DB).
-6. Deploy. Render builds with Docker and runs the app on assigned port.
+### User
+
+| Method | Endpoint | Access | Description |
+|---|---|---|---|
+| GET | `/api/users/me` | Protected | Current user profile |
+
+## Run With Render
+
+1. Push the backend folder to GitHub.
+2. Create a Render Web Service.
+3. Choose Docker deployment.
+4. Add environment variables in Render.
+5. Make sure `DB_URL` points to a live PostgreSQL database, such as Neon.
+6. Deploy.
+
+If Render still tries `localhost:5432`, it means the database environment variables were not set correctly.
 
 ## Notes
 
-- Do not hardcode secrets in source code.
-- JWT secret should be sufficiently long and random.
-- Only pending orders are cancellable.
-- Email failures are logged but do not break core order flow.
+- Do not commit secrets.
+- Use a strong JWT secret.
+- Email errors should not block core API behavior.
