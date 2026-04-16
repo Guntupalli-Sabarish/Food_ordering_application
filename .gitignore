@@ -11,6 +11,9 @@
 # Local scripts that may contain credentials
 run-e2e.ps1
 
+# Copilot agent files
+.agents/
+
 # Keep local Copilot agent prompts out of git history
 .github/agents/
 
